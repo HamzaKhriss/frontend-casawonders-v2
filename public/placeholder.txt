@@ -1,0 +1,6 @@
+# Placeholder files needed:
+# - favicon.ico (website icon)
+# - placeholder.jpg (default listing image)
+# - placeholder-avatar.jpg (default user avatar)
+ 
+These files are referenced in the codebase but missing. 
