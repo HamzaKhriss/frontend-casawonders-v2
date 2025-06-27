@@ -1,6 +1,6 @@
 // lib/api.ts — pont entre FastAPI et Next.js
 
-import { Listing, Booking, User } from "./mockData";
+import { Listing, Booking, User } from "./types";
 import { API_BASE, authFetch } from "./auth"; // ← use your authFetch helper
 
 /* ------------------------------------------------------------------ */
@@ -26,8 +26,8 @@ export interface PaginatedResponse<T> {
 export interface ReservationInput {
   listingId: string;
   slotId: number;
-  date: string;            // "YYYY-MM-DD"
-  time: string;            // "HH:mm"
+  date: string; // "YYYY-MM-DD"
+  time: string; // "HH:mm"
   participants: number;
   specialRequests?: string;
   paymentToken: string;
@@ -40,8 +40,7 @@ const buildQuery = (params: Record<string, any>): string =>
   Object.entries(params)
     .filter(([, v]) => v != null && v !== "")
     .map(
-      ([k, v]) =>
-        `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`
+      ([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`
     )
     .join("&");
 
@@ -261,9 +260,8 @@ export const getBookings = async (): Promise<Booking[]> => {
 };
 
 export const cancelBooking = async (id: string): Promise<void> => {
-  const res = await authFetch(
-    `${API_BASE}/user/reservations/${id}/cancel`,
-    { method: "POST" }
-  );
+  const res = await authFetch(`${API_BASE}/user/reservations/${id}/cancel`, {
+    method: "POST",
+  });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
 };

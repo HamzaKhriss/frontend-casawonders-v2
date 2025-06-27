@@ -106,7 +106,7 @@ const MainLayout: React.FC<{
       <main className={!isPartnerPage ? "pt-24 flex-1" : "flex-1"}>
         {children}
       </main>
-      {!isPartnerPage && <Footer currentLanguage={lang} />}
+      {!isPartnerPage && <Footer currentLanguage={lang} currentTheme={theme} />}
     </div>
   );
 };

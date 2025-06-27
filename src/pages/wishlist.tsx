@@ -18,7 +18,7 @@ import {
 
 import Card from "@/components/Card";
 import BookingModal from "@/components/BookingModal";
-import { Listing } from "@/lib/mockData";
+import { Listing } from "@/lib/types";
 import { getFavoriteListings, removeFavorite } from "@/lib/api";
 
 interface WishlistPageProps {
@@ -94,7 +94,7 @@ const WishlistPage: React.FC<WishlistPageProps> = ({ currentLanguage }) => {
 
   // Calculate stats
   const totalValue = listings.reduce((sum, listing) => sum + listing.price, 0);
-  const categories = [...new Set(listings.map((l) => l.category))];
+  const categories = Array.from(new Set(listings.map((l) => l.category)));
 
   /* ─────────── Rendu ─────────── */
   return (

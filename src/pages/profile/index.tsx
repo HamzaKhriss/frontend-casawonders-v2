@@ -29,7 +29,7 @@ import {
   Shield,
   Key,
 } from "lucide-react";
-import { Booking, User as UserType } from "@/lib/mockData";
+import { Booking, User as UserType } from "@/lib/types";
 import {
   getUser,
   getBookings,

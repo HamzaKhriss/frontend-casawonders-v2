@@ -1,6 +1,6 @@
 import React from "react";
 import dynamic from "next/dynamic";
-import { Listing } from "@/lib/mockData";
+import { Listing } from "@/lib/types";
 
 /* ------------------------------------------------------------------ */
 /*  Props                                                             */
@@ -39,16 +39,11 @@ const MapLoading: React.FC<{
 /*  – on typpe correctement MapViewProps                               */
 /*  – on transmet height + currentLanguage au loader                   */
 /* ------------------------------------------------------------------ */
-const DynamicMap = dynamic<MapViewProps>(
-  () => import("./MapViewClient"),
-  {
-    ssr: false,
-    // le loader ne reçoit PAS les props → on les capture avec une closure
-    loading: () => (
-      <MapLoading height="400px" currentLanguage="en" />
-    ),
-  }
-);
+const DynamicMap = dynamic<MapViewProps>(() => import("./MapViewClient"), {
+  ssr: false,
+  // le loader ne reçoit PAS les props → on les capture avec une closure
+  loading: () => <MapLoading height="400px" currentLanguage="en" />,
+});
 
 /* ------------------------------------------------------------------ */
 /*  Facade                                                             */
@@ -59,11 +54,7 @@ const MapView: React.FC<MapViewProps> = ({
   ...rest
 }) => {
   return (
-    <DynamicMap
-      {...rest}
-      height={height}
-      currentLanguage={currentLanguage}
-    />
+    <DynamicMap {...rest} height={height} currentLanguage={currentLanguage} />
   );
 };
 

@@ -17,7 +17,7 @@ import {
   PaginatedResponse,
 } from "@/lib/api";
 import { getLatLng, watchPosition } from "@/lib/geo";
-import { Listing } from "@/lib/mockData";
+import { Listing } from "@/lib/types";
 
 interface ExplorePageProps {
   currentLanguage: "en" | "fr";

@@ -365,7 +365,7 @@ export const partnerAuthApi = {
     email: string,
     password: string
   ): Promise<{ access_token: string; token_type: string }> => {
-    const response = await fetch(`${API_BASE}/api/auth/login`, {
+    const response = await fetch(`${API_BASE}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -381,7 +381,7 @@ export const partnerAuthApi = {
     password: string;
     role?: string;
   }): Promise<{ message: string }> => {
-    const response = await fetch(`${API_BASE}/api/auth/register`, {
+    const response = await fetch(`${API_BASE}/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -411,7 +411,7 @@ export const partnerAuthApi = {
     postal_code?: string;
     country: string;
   }): Promise<{ message: string; access_token: string }> => {
-    const response = await fetch(`${API_BASE}/api/auth/register/partner`, {
+    const response = await fetch(`${API_BASE}/auth/register/partner`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -423,7 +423,7 @@ export const partnerAuthApi = {
 
   // Get current partner user info
   getCurrentUser: async (): Promise<any> => {
-    const response = await fetch(`${API_BASE}/api/auth/profile`, {
+    const response = await fetch(`${API_BASE}/auth/profile`, {
       method: "GET",
       headers: getAuthHeaders(),
     });

@@ -43,7 +43,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-import { Listing } from "@/lib/mockData";
+import { Listing } from "@/lib/types";
 import {
   getListing,
   getFavorites,

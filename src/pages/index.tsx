@@ -17,7 +17,7 @@ import MapView from "@/components/MapView";
 import FilterDrawer from "@/components/FilterDrawer";
 import Card from "@/components/Card";
 import HeroSection from "@/components/HeroSection";
-import { Listing } from "@/lib/mockData";
+import { Listing } from "@/lib/types";
 import { getListings, ListingFilters } from "@/lib/api";
 
 interface HomePageProps {
@@ -250,14 +250,18 @@ const HomePage: React.FC<HomePageProps> = ({ currentLanguage }) => {
                 {featuredListings.map((listing) => (
                   <div
                     key={listing.id}
-                    className="group cursor-pointer"
+                    className="group cursor-pointer h-full"
                     onClick={() => handleListingCardClick(listing)}
                   >
-                    <div className="bg-white dark:bg-gray-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
-                      <div className="relative h-64 overflow-hidden">
+                    <div className="bg-white dark:bg-gray-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 h-full flex flex-col">
+                      <div className="relative h-64 overflow-hidden flex-shrink-0">
                         <img
-                          src={listing.image_url || "/placeholder.jpg"}
-                          alt={listing.name}
+                          src={listing.images[0] || "/placeholder.jpg"}
+                          alt={
+                            currentLanguage === "en"
+                              ? listing.title
+                              : listing.titleFr
+                          }
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         />
                         <div className="absolute top-4 left-4">
@@ -274,26 +278,39 @@ const HomePage: React.FC<HomePageProps> = ({ currentLanguage }) => {
                           </div>
                         </div>
                       </div>
-                      <div className="p-6 space-y-4">
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white line-clamp-2">
-                          {listing.name}
-                        </h3>
-                        <p className="text-gray-600 dark:text-gray-400 line-clamp-2">
-                          {listing.description}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
-                            <MapPin className="w-4 h-4" />
-                            <span className="text-sm">
-                              {typeof listing.location === "string"
-                                ? listing.location
-                                : listing.location?.address ||
-                                  listing.location?.addressFr ||
-                                  "Casablanca"}
-                            </span>
-                          </div>
-                          <div className="text-accent font-bold">
-                            {listing.price_range || "Free"}
+                      <div className="p-6 flex-1 flex flex-col">
+                        {/* Title - CSS line clamp for better text handling */}
+                        <div className="mb-3">
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white line-clamp-2 leading-tight">
+                            {currentLanguage === "en"
+                              ? listing.title
+                              : listing.titleFr}
+                          </h3>
+                        </div>
+                        {/* Description - CSS line clamp for better text handling */}
+                        <div className="mb-4">
+                          <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3 leading-relaxed">
+                            {currentLanguage === "en"
+                              ? listing.description
+                              : listing.descriptionFr}
+                          </p>
+                        </div>
+                        {/* Bottom Section - Push to bottom */}
+                        <div className="mt-auto">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
+                              <MapPin className="w-4 h-4" />
+                              <span className="text-sm">
+                                {typeof listing.location === "string"
+                                  ? listing.location
+                                  : listing.location?.address ||
+                                    listing.location?.addressFr ||
+                                    "Casablanca"}
+                              </span>
+                            </div>
+                            <div className="text-accent font-bold">
+                              {listing.price ? `${listing.price} MAD` : "Free"}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -356,7 +373,6 @@ const HomePage: React.FC<HomePageProps> = ({ currentLanguage }) => {
                     selectedListing={selectedListing}
                     onListingClick={handleListingClick}
                     userLocation={userLocation}
-                    filters={filters}
                     currentLanguage={currentLanguage}
                   />
                 )}
@@ -382,8 +398,8 @@ const HomePage: React.FC<HomePageProps> = ({ currentLanguage }) => {
         </section>
 
         {/* Partner CTA Section */}
-        <section className="py-20 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-black/20"></div>
+        <section className="py-20 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-900 dark:text-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-black/5 dark:bg-black/20"></div>
           <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
@@ -392,7 +408,7 @@ const HomePage: React.FC<HomePageProps> = ({ currentLanguage }) => {
                     ? "Join Casa Wonders as a Partner"
                     : "Rejoignez Casa Wonders en tant que Partenaire"}
                 </h2>
-                <p className="text-xl text-gray-300 mb-8 leading-relaxed">
+                <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
                   {currentLanguage === "en"
                     ? "Showcase your business to thousands of travelers and grow your revenue with our trusted platform."
                     : "Présentez votre entreprise à des milliers de voyageurs et augmentez vos revenus avec notre plateforme de confiance."}
@@ -420,7 +436,7 @@ const HomePage: React.FC<HomePageProps> = ({ currentLanguage }) => {
                       <div className="w-6 h-6 bg-accent rounded-full flex items-center justify-center">
                         <Check className="w-4 h-4 text-white" />
                       </div>
-                      <span className="text-gray-200">
+                      <span className="text-gray-700 dark:text-gray-200">
                         {currentLanguage === "en" ? benefit.en : benefit.fr}
                       </span>
                     </div>
@@ -443,7 +459,7 @@ const HomePage: React.FC<HomePageProps> = ({ currentLanguage }) => {
                   </button>
                   <button
                     onClick={() => router.push("/partner/login")}
-                    className="group border-2 border-white/30 text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:bg-white/10 transition-all duration-300"
+                    className="group border-2 border-gray-300 dark:border-white/30 text-gray-900 dark:text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-300"
                   >
                     {currentLanguage === "en"
                       ? "Partner Login"
@@ -452,17 +468,19 @@ const HomePage: React.FC<HomePageProps> = ({ currentLanguage }) => {
                 </div>
               </div>
               <div className="relative">
-                <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
+                <div className="bg-white/80 dark:bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-gray-200 dark:border-white/20">
                   <div className="space-y-6">
                     <div className="flex items-center space-x-4">
                       <div className="w-12 h-12 bg-accent rounded-xl flex items-center justify-center">
                         <Users className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-semibold text-white">
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                           500+ Partners
                         </h3>
-                        <p className="text-gray-300">Growing community</p>
+                        <p className="text-gray-600 dark:text-gray-300">
+                          Growing community
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-4">
@@ -470,10 +488,12 @@ const HomePage: React.FC<HomePageProps> = ({ currentLanguage }) => {
                         <TrendingUp className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-semibold text-white">
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                           25% Average Growth
                         </h3>
-                        <p className="text-gray-300">In bookings per month</p>
+                        <p className="text-gray-600 dark:text-gray-300">
+                          In bookings per month
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-4">
@@ -481,10 +501,12 @@ const HomePage: React.FC<HomePageProps> = ({ currentLanguage }) => {
                         <Star className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-semibold text-white">
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                           4.9/5 Rating
                         </h3>
-                        <p className="text-gray-300">Partner satisfaction</p>
+                        <p className="text-gray-600 dark:text-gray-300">
+                          Partner satisfaction
+                        </p>
                       </div>
                     </div>
                   </div>

@@ -10,7 +10,7 @@ import {
   Circle,
 } from "react-leaflet";
 import L from "leaflet";
-import { Listing } from "@/lib/mockData";
+import { Listing } from "@/lib/types";
 import { Star, MapPin } from "lucide-react";
 
 // Leaflet default icons
@@ -24,40 +24,99 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
-type CategoryKey = Listing["category"];
-
-const CATEGORY_COLORS: Record<CategoryKey, string> = {
-  restaurant: "#3B82F6",
-  event:      "#8B5CF6",
-  cultural:   "#10B981",
+const CATEGORY_COLORS: Record<string, string> = {
+  // Lowercase versions (normalized)
+  restaurant: "#1ABC9C", // Your accent color for restaurants
+  event: "#E74C3C", // Red for events
+  cultural: "#3498DB", // Blue for cultural sites
+  // Original case versions (what comes from API)
+  Restaurant: "#1ABC9C",
+  Event: "#E74C3C",
+  Cultural: "#3498DB",
+  // Plural versions
+  restaurants: "#1ABC9C",
+  events: "#E74C3C",
+  culturals: "#3498DB",
+  // Other possible names
+  culture: "#3498DB",
+  activity: "#9B59B6",
+  activities: "#9B59B6",
 };
 
 // on protège l’accès aux labels avec un fallback
-const CATEGORY_LABELS: Record<CategoryKey, { en: string; fr: string }> = {
+const CATEGORY_LABELS: Record<string, { en: string; fr: string }> = {
+  // Lowercase versions
   restaurant: { en: "Restaurant", fr: "Restaurant" },
-  event:      { en: "Event",      fr: "Événement" },
-  cultural:   { en: "Cultural",   fr: "Culturel" },
+  event: { en: "Event", fr: "Événement" },
+  cultural: { en: "Cultural", fr: "Culturel" },
+  // Original case versions
+  Restaurant: { en: "Restaurant", fr: "Restaurant" },
+  Event: { en: "Event", fr: "Événement" },
+  Cultural: { en: "Cultural", fr: "Culturel" },
+  // Plural versions
+  restaurants: { en: "Restaurants", fr: "Restaurants" },
+  events: { en: "Events", fr: "Événements" },
+  culturals: { en: "Culturals", fr: "Culturels" },
+  // Other names
+  culture: { en: "Culture", fr: "Culture" },
+  activity: { en: "Activity", fr: "Activité" },
+  activities: { en: "Activities", fr: "Activités" },
 };
 
-const ICON_CACHE = new Map<CategoryKey, L.DivIcon>();
-function getIcon(cat: CategoryKey): L.DivIcon {
-  if (ICON_CACHE.has(cat)) return ICON_CACHE.get(cat)!;
-  const color = CATEGORY_COLORS[cat] ?? "#6B7280";
+// Category icons
+const CATEGORY_ICONS: Record<string, string> = {
+  // Lowercase versions
+  restaurant: "🍽️",
+  event: "🎭",
+  cultural: "🏛️",
+  // Original case versions
+  Restaurant: "🍽️",
+  Event: "🎭",
+  Cultural: "🏛️",
+  // Plural versions
+  restaurants: "🍽️",
+  events: "🎭",
+  culturals: "🏛️",
+  // Other names
+  culture: "🏛️",
+  activity: "🏄‍♂️",
+  activities: "🏄‍♂️",
+};
+
+const ICON_CACHE = new Map<string, L.DivIcon>();
+function getIcon(cat: string | undefined): L.DivIcon {
+  const category = cat || "default";
+  if (ICON_CACHE.has(category)) return ICON_CACHE.get(category)!;
+
+  // Try both original case and lowercase
+  const color =
+    CATEGORY_COLORS[category] ||
+    CATEGORY_COLORS[category.toLowerCase()] ||
+    "#1ABC9C";
+  const categoryIcon =
+    CATEGORY_ICONS[category] || CATEGORY_ICONS[category.toLowerCase()] || "📍";
+
+  console.log(
+    `Creating icon for category: "${cat}" -> normalized: "${category}" -> color: ${color}`
+  ); // Debug log
+
   const icon = L.divIcon({
     html: `<div style="
       background:${color};
-      width:24px;height:24px;
+      width:32px;height:32px;
       border-radius:50%;
       border:3px solid #fff;
-      box-shadow:0 2px 8px rgba(0,0,0,.3);
-      display:flex;align-items:center;justify-content:center;">
-        <div style="width:8px;height:8px;background:#fff;border-radius:50%;"></div>
+      box-shadow:0 4px 12px rgba(0,0,0,.3);
+      display:flex;align-items:center;justify-content:center;
+      font-size:14px;
+      position:relative;">
+        ${categoryIcon}
     </div>`,
     className: "",
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
   });
-  ICON_CACHE.set(cat, icon);
+  ICON_CACHE.set(category, icon);
   return icon;
 }
 
@@ -80,11 +139,10 @@ const MapUpdater: React.FC<{
   const map = useMap();
   useEffect(() => {
     if (selected) {
-      map.setView(
-        [selected.location.lat, selected.location.lng],
-        15,
-        { animate: true, duration: 1 }
-      );
+      map.setView([selected.location.lat, selected.location.lng], 15, {
+        animate: true,
+        duration: 1,
+      });
     } else {
       map.setView(center, zoom, { animate: true, duration: 1 });
     }
@@ -105,10 +163,16 @@ const MapViewClient: React.FC<MapViewProps> = ({
   const style = useMemo(() => ({ height }), [height]);
 
   // accès sécurisé aux labels, fallback sur la version anglaise puis la clé brute
-  const getCategoryLabel = (cat: CategoryKey) =>
-    CATEGORY_LABELS[cat]?.[currentLanguage] ??
-    CATEGORY_LABELS[cat]?.en ??
-    cat;
+  const getCategoryLabel = (cat: string) => {
+    const category = cat || "";
+    return (
+      CATEGORY_LABELS[category]?.[currentLanguage] ??
+      CATEGORY_LABELS[category.toLowerCase()]?.[currentLanguage] ??
+      CATEGORY_LABELS[category]?.en ??
+      CATEGORY_LABELS[category.toLowerCase()]?.en ??
+      (cat || "Unknown")
+    );
+  };
 
   return (
     <div className="relative rounded-lg overflow-hidden" style={style}>
@@ -139,19 +203,22 @@ const MapViewClient: React.FC<MapViewProps> = ({
             }}
           >
             <Popup>
-              {currentLanguage === "en"
-                ? "Your location"
-                : "Votre position"}
+              {currentLanguage === "en" ? "Your location" : "Votre position"}
             </Popup>
           </Circle>
         )}
 
         {/* Markers */}
         {listings.map((li) => {
-          const title   = currentLanguage === "en" ? li.title : li.titleFr ?? li.title;
-          const address = currentLanguage === "en"
-            ? li.location.address
-            : li.location.addressFr ?? li.location.address;
+          const title =
+            currentLanguage === "en" ? li.title : li.titleFr ?? li.title;
+          const address =
+            currentLanguage === "en"
+              ? li.location.address
+              : li.location.addressFr ?? li.location.address;
+
+          // Debug log to see what category we're getting
+          console.log(`Listing ${li.id} has category: "${li.category}"`);
 
           return (
             <Marker
@@ -169,16 +236,20 @@ const MapViewClient: React.FC<MapViewProps> = ({
                       className="w-full h-full object-cover"
                       loading="lazy"
                       onError={(e) =>
-                        ((e.target as HTMLImageElement).src = "/placeholder.jpg")
+                        ((e.target as HTMLImageElement).src =
+                          "/placeholder.jpg")
                       }
                     />
                     <span
                       className={`absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-medium ${
-                        li.category === "restaurant"
-                          ? "bg-blue-100 text-blue-800"
-                          : li.category === "event"
-                          ? "bg-purple-100 text-purple-800"
-                          : "bg-green-100 text-green-800"
+                        li.category?.toLowerCase().includes("restaurant")
+                          ? "bg-accent/10 text-accent"
+                          : li.category?.toLowerCase().includes("event")
+                          ? "bg-red-100 text-red-600"
+                          : li.category?.toLowerCase().includes("cultural") ||
+                            li.category?.toLowerCase().includes("culture")
+                          ? "bg-blue-100 text-blue-600"
+                          : "bg-purple-100 text-purple-600"
                       }`}
                     >
                       {getCategoryLabel(li.category)}
@@ -202,7 +273,10 @@ const MapViewClient: React.FC<MapViewProps> = ({
                       {li.price} MAD
                     </span>
                     <button
-                      onClick={() => onListingClick?.(li)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(`/listing/${li.id}`, "_blank");
+                      }}
                       className="px-3 py-1 bg-accent text-white text-xs rounded-lg hover:bg-accent/90 transition-colors"
                     >
                       {currentLanguage === "en"
@@ -216,6 +290,43 @@ const MapViewClient: React.FC<MapViewProps> = ({
           );
         })}
       </MapContainer>
+
+      {/* Legend */}
+      <div className="absolute bottom-4 left-4 z-[1000] bg-white/95 backdrop-blur-sm p-3 rounded-lg shadow-lg border border-gray-200">
+        <h4 className="text-sm font-semibold text-gray-900 mb-2">
+          {currentLanguage === "en" ? "Categories" : "Catégories"}
+        </h4>
+        <div className="space-y-2">
+          {/* Only show the main categories without duplicates */}
+          <div className="flex items-center space-x-2">
+            <div
+              className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
+              style={{ backgroundColor: "#1ABC9C" }}
+            />
+            <span className="text-xs text-gray-700">
+              {currentLanguage === "en" ? "Restaurant" : "Restaurant"}
+            </span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div
+              className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
+              style={{ backgroundColor: "#E74C3C" }}
+            />
+            <span className="text-xs text-gray-700">
+              {currentLanguage === "en" ? "Event" : "Événement"}
+            </span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div
+              className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
+              style={{ backgroundColor: "#3498DB" }}
+            />
+            <span className="text-xs text-gray-700">
+              {currentLanguage === "en" ? "Cultural" : "Culturel"}
+            </span>
+          </div>
+        </div>
+      </div>
 
       {/* Bouton reset */}
       <button

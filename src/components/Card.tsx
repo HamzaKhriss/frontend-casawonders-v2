@@ -1,7 +1,7 @@
 // components/Card.tsx
 import React from "react";
 import { Heart, Star, MapPin, User, Shield } from "lucide-react";
-import { Listing } from "@/lib/mockData";
+import { Listing } from "@/lib/types";
 import { useAuth } from "@/context/AuthContext";
 
 interface CardProps {
