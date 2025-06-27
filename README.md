@@ -1,2 +1,2 @@
 # casa-wonders-web
- web frontend 0.1
+ web frontend 0.5
